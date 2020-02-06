@@ -1,0 +1,26 @@
+﻿<Window x:Class="SearchPhotoDuplicatesMVVM.Views.RenameFileWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SearchPhotoDuplicatesMVVM"
+        mc:Ignorable="d"
+        Title="RenameFileWindow" Height="150" Width="300"
+        WindowStartupLocation="CenterScreen">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+        <Border BorderBrush="DarkGray" Grid.Row="0">
+            <TextBox Text="{Binding Name}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Center" HorizontalContentAlignment="Left" Height="30" Width="250" VerticalContentAlignment="Center"/>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <Button x:Name="BtnSave" Content="Сохранить" Command="{Binding NewNameCommand}" IsDefault="True" Click="BtnSave_Click" Height="30" Width="70" Margin="10">
+            </Button>
+            <Button x:Name="BtnCancel"  Content="Отмена" IsCancel="True" Click="BtnCancel_Click" Height="30" Width="70" Margin="10"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,44 @@
+﻿<Window x:Class="SearchPhotoDuplicatesMVVM.Views.StartWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SearchPhotoDuplicatesMVVM"
+        mc:Ignorable="d"
+        Height="180" Width="550"
+        WindowStartupLocation="CenterScreen"
+        
+        Icon="/SearchPhotoDuplicatesMVVM;component/Resources/Icons/img_126235.png" 
+        
+        ResizeMode="NoResize" SizeToContent="Manual">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="Укажите директорию с изображениями:" VerticalAlignment="Center" Margin="10"/>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <Border BorderBrush="DarkGray" Grid.Row="0" VerticalAlignment="Center">
+                <TextBox x:Name="Dir" Text="{Binding ChosenDirectory,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Center" HorizontalContentAlignment="Left" Height="30" Width="450" VerticalContentAlignment="Center"/>
+            </Border>
+            <Button Content="Обзор..." Command="{Binding ChoseDirectoryCommand}" Height="30" Width="60"></Button>
+        </StackPanel>
+
+        <!--#region Grid.Row 2-->
+        <Border Grid.Row="2">
+            <DockPanel Width="540" HorizontalAlignment="Left">
+                
+                <Button x:Name="BtnNext"  Content="Далее" Width="70" Height="30" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="9" Command="{Binding NextCommand}" Click="BtnNext_Click"/>
+
+                <Button x:Name="BtnCancel" Content="Отменить" Width="70" Height="30" DockPanel.Dock="Left" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="9" Click="BtnCancel_Click"/>
+
+            </DockPanel>
+        </Border>
+
+
+        <!--#endregion-->
+    </Grid>
+</Window>

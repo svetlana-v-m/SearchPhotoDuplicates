@@ -1,0 +1,319 @@
+﻿<Window x:Class="SearchPhotoDuplicatesMVVM.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SearchPhotoDuplicatesMVVM"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="500" Width="800"
+        WindowStartupLocation="CenterScreen">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="35"/>
+            <RowDefinition MinHeight="100"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <!--#region Column 0-->
+        <!--#region Grid.Row=0-->
+        <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
+            <Button Content="{Binding SearchButtonContent}" HorizontalAlignment="Center" Command="{Binding FindImagesCommand}" Height="25"/>
+            <Button Content="Удалить все копии с диска" Command="{Binding RemoveAllCopiesFromDiskCommand}" Height="25">
+                <Button.ToolTip>
+                    <ToolTip Content="Удалить с диска все найденные копии, оставить только оригиналы"/>
+                </Button.ToolTip>
+            </Button>
+            
+        </StackPanel>
+        <!--#endregion-->
+
+        <!--#region Grid.Row=1-->
+        <Image Source="{Binding ImageSource}" Stretch="Uniform" Grid.Column="0" Grid.Row="1" Margin="5"/>
+        <!--#endregion-->
+
+        <!--#region Grid.Row=2-->
+        <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal">
+            <ComboBox 
+                Margin="5" 
+                SelectedItem="{Binding SelectedFilter,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
+                ItemsSource="{Binding Filters}"
+                IsSynchronizedWithCurrentItem="True" 
+                Width="150" Height="23"
+                IsEnabled="{Binding IsFilterEnabled}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="SelectionChanged">
+                        <i:InvokeCommandAction Command="{Binding Path=DataContext.FilterCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ComboBox}}}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ComboBox>
+
+            <TextBox Text="{Binding SearchText,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Width="150" Height="23" Margin="5">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="TextChanged">
+                        <i:InvokeCommandAction Command="{Binding Path=DataContext.SearchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TextBox}}}"/>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="GotFocus">
+                        <i:InvokeCommandAction Command="{Binding Path=DataContext.SearchTextBoxGotFocusCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TextBox}}}"/>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="LostFocus">
+                        <i:InvokeCommandAction Command="{Binding Path=DataContext.SearchTextBoxLostFocusCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TextBox}}}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </TextBox>
+            <Border Margin="2">
+                <Button Width="30" Height="30" Background="Transparent" Command="{Binding RefreshImagesListCommand}">
+                    <Image Source="/SearchPhotoDuplicatesMVVM;component/Resources/Icons/ios7-refresh.png" Stretch="Fill"/>
+                    <Button.ToolTip>
+                        <ToolTip Content="Обновить список"/>
+                    </Button.ToolTip>
+                </Button>
+            </Border>
+        </StackPanel>
+        <!--#endregion-->
+        
+        <!--#region Grid.Row=3-->
+        <DataGrid x:Name="ImgView" 
+                  ItemsSource="{Binding ImagesCollection,UpdateSourceTrigger=PropertyChanged}"
+                  SelectionUnit="FullRow"  
+                  SelectedValuePath="Copies" 
+                  MinHeight="100" Grid.Row="3" Grid.Column="0" 
+                  AutoGenerateColumns="False" 
+                  IsReadOnly="True" 
+                  SelectionMode="Single"
+                  SelectedItem="{Binding SelectedImage,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="FontWeight" Value="Medium"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <i:InvokeCommandAction Command="{Binding Path=DataContext.SelectionChangedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Открыть" CommandParameter="selectedImages" Command="{Binding OpenFileCommand}"/>
+                    <MenuItem Header="Открыть в папке" CommandParameter="selectedImages" Command="{Binding OpenFolderCommand}"/>
+                    <MenuItem Header="Удалить из списка" CommandParameter="selectedImages" Command="{Binding RemoveFromListCommand}"/>
+                    <MenuItem Header="Удалить с диска" CommandParameter="selectedImages" Command="{Binding RemoveFromDiskCommand}" />
+                    <MenuItem Header="Переместить в другую папку">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <i:InvokeCommandAction CommandParameter="selectedImages" Command="{Binding Path=DataContext.ReplaceCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type MenuItem}}}"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </MenuItem>
+                    <MenuItem Header="Переименовать" CommandParameter="{Binding SelectedImage}" Command="{Binding RenameFileCommand}" />
+            </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.Header>
+                         <CheckBox HorizontalAlignment="Center" 
+                                VerticalAlignment="Center" 
+                                Height="20"
+                                IsEnabled="{Binding Path=DataContext.IsCheckAllEnabled,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=DataGrid}}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Checked">
+                                    <i:InvokeCommandAction CommandParameter="selectedImages" Command="{Binding Path=DataContext.CheckAllImagesCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type DataGrid}}}"/>
+                                </i:EventTrigger>
+                                <i:EventTrigger EventName="Unchecked">
+                                    <i:InvokeCommandAction CommandParameter="selectedImages" Command="{Binding Path=DataContext.UncheckAllImagesCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type DataGrid}}}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </CheckBox>
+                      </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox 
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center" 
+                                Height="20"
+                                IsChecked="{Binding ImageChecked,Mode=TwoWay}">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Checked">
+                                        <i:InvokeCommandAction CommandParameter="selectedImage" Command="{Binding Path=DataContext.CheckedImageCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type DataGrid}}}"/>
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="Unchecked">
+                                        <i:InvokeCommandAction CommandParameter="selectedImage" Command="{Binding Path=DataContext.UncheckedImageCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type DataGrid}}}"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                             </CheckBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Name" Binding="{Binding Path=Name, UpdateSourceTrigger=PropertyChanged}"/>
+                <DataGridTextColumn Header="Size" Binding="{Binding Path=Length,UpdateSourceTrigger=PropertyChanged}"/>
+                <DataGridTextColumn Header="Copies" Binding="{Binding Path=NumberOfCopies,UpdateSourceTrigger=PropertyChanged}"/>
+                <DataGridTextColumn Header="Copies Size" Binding="{Binding Path=StringCopiesSize,UpdateSourceTrigger=PropertyChanged}"/>
+                <DataGridTextColumn Header="Creation date and time" Binding="{Binding Path=Date_Time,UpdateSourceTrigger=PropertyChanged}"/>
+                <DataGridTextColumn Header="Path" Binding="{Binding Path=Directory,UpdateSourceTrigger=PropertyChanged}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <!--#endregion-->
+        
+        <!--#region Grid.Row=4-->
+        <StackPanel Grid.Row="4" Orientation="Horizontal">
+            <Label Content="{Binding SearchProgress}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            <Label Content="{Binding NumberOfCheckedImages}" Visibility="{Binding Label2Visibility}"/>
+            <Label Content="{Binding SizeOfCheckedImages}" Visibility="{Binding Label2Visibility}"/>
+        </StackPanel>
+        
+        <!--#endregion-->
+
+        <!--#region Grid.Row=5-->
+        <StackPanel Grid.Row="5" Grid.ColumnSpan="2" Orientation="Horizontal">
+                <Label x:Name="folder" Content="{Binding DirForUI}" Foreground="Gray"/>
+                <Label x:Name="NumOfIMG" Content="{Binding NumberOfImages}" FontWeight="Bold" Foreground="Gray"/>
+                <Label Content=" изображений (" Visibility="{Binding LabelVisibility}" Foreground="Gray"/>
+                <Label x:Name="FullSize" Content="{Binding CollectionSize}" FontWeight="Bold" Foreground="Gray"/>
+                <Label Content=")" Visibility="{Binding LabelVisibility}" Foreground="Gray"/>
+                <Label Content=", копий " Visibility="{Binding Label1Visibility}" Foreground="Gray"/>
+                <Label Content="{Binding NumberOfCopies}" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Gray"/>
+                <Label Content=" (" Visibility="{Binding Label1Visibility}" Foreground="Gray"/>
+                <Label Content="{Binding CopiesTotalSize}" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Gray"/>
+                <Label Content=")" Visibility="{Binding Label1Visibility}" Foreground="Gray"/>
+             </StackPanel>
+         
+        
+        <!--#endregion-->
+        <!--#endregion-->
+        
+        <!--#region Column 1-->
+
+        <!--#region Grid.Row=0-->
+        
+        <!--#endregion-->
+
+        <!--#region Grid.Row=1-->
+        
+        <Image Source="{Binding ImageCopySource}" Stretch="Uniform" Grid.Row="1" Grid.Column="1" Margin="5"/>
+        <!--#endregion-->
+
+        <!--#region Grid.Row=2-->
+        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
+            <Border>
+                <Button Content="Удалить все копии с диска" CommandParameter="{Binding SelectedImage}" Command="{Binding RemoveAllCopiesFromDiskCommand}" Height="25" >
+                    <Button.ToolTip>
+                        <ToolTip Content="Удалить с диска все копии выбранного оригинала"/>
+                    </Button.ToolTip>
+                </Button>
+            </Border>
+            <Border>
+                <Button Content="Очистить список" Command="{Binding RemoveAllCopiesFromListCommand}" Height="25" CommandParameter="{Binding SelectedImage}">
+                    <Button.ToolTip>
+                        <ToolTip Content="Удалить из списка,но оставить на диске все копии выбранного оригинала"/>
+                    </Button.ToolTip>
+                </Button>
+            </Border>
+        </StackPanel>
+        <!--#endregion-->
+
+        <!--#region Grid.Row=3-->
+        <DataGrid x:Name="CopyView" 
+                  ItemsSource="{Binding SelectedValue, ElementName=ImgView, UpdateSourceTrigger=PropertyChanged}"
+                  SelectionUnit="FullRow"
+                  SelectionMode="Extended"
+                  IsReadOnly="True"  
+                  MinHeight="100" 
+                  AutoGenerateColumns="False" 
+                  Grid.Row="3" Grid.Column="1" 
+                  SelectedValuePath="FullPath" 
+                  SelectedItem="{Binding SelectedCopy,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="FontWeight" Value="Medium"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <i:InvokeCommandAction Command="{Binding Path=DataContext.SelectionCopyChangedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Открыть" CommandParameter="selectedCopies" Command="{Binding OpenFileCommand}"/>
+                    <MenuItem Header="Открыть в папке" CommandParameter="selectedCopies" Command="{Binding OpenFolderCommand}"/>
+                    <MenuItem Header="Удалить из списка" CommandParameter="selectedCopies" Command="{Binding RemoveFromListCommand}"/>
+                    <MenuItem Header="Удалить с диска" CommandParameter="selectedCopies" Command="{Binding RemoveFromDiskCommand}"/>
+                    <MenuItem Header="Переместить в другую папку">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Click">
+                                <i:InvokeCommandAction CommandParameter="selectedCopies" Command="{Binding Path=DataContext.ReplaceCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type MenuItem}}}"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </MenuItem>
+                    <MenuItem Header="Переименовать" CommandParameter="{Binding SelectedCopy}" Command="{Binding RenameFileCommand}" />
+                    <MenuItem Header="Это оригинал" Command="{Binding ThisIsOriginCommand}"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.Header>
+                        <CheckBox HorizontalAlignment="Center" 
+                                VerticalAlignment="Center" 
+                                Height="20"
+                                IsEnabled="{Binding Path=DataContext.IsCheckAllCopiesEnabled,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=DataGrid}}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Checked">
+                                    <i:InvokeCommandAction CommandParameter="selectedCopies" Command="{Binding Path=DataContext.CheckAllImagesCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type DataGrid}}}"/>
+                                </i:EventTrigger>
+                                <i:EventTrigger EventName="Unchecked">
+                                    <i:InvokeCommandAction CommandParameter="selectedCopies" Command="{Binding Path=DataContext.UncheckAllImagesCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type DataGrid}}}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </CheckBox>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox 
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center" 
+                                Height="20"
+                                IsChecked="{Binding ImageChecked,Mode=TwoWay}">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="Checked">
+                                        <i:InvokeCommandAction CommandParameter="selectedCopy" Command="{Binding Path=DataContext.CheckedImageCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type DataGrid}}}"/>
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="Unchecked">
+                                        <i:InvokeCommandAction CommandParameter="selectedCopy" Command="{Binding Path=DataContext.UncheckedImageCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type DataGrid}}}"/>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </CheckBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Copy name" Binding="{Binding Name}"/>
+                <DataGridTextColumn Header="Copy size" Binding="{Binding Length}"/>
+                <DataGridTextColumn Header="Copy creation date and time" Binding="{Binding Date_Time}"/>
+                <DataGridTextColumn Header="Copy path" Binding="{Binding Directory}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <!--#endregion-->
+
+        <!--#region Grid.Row=4-->
+        <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
+            <Label Content="{Binding NumberOfCheckedCopies}" Visibility="{Binding Label3Visibility}"/>
+            <Label Content="{Binding SizeOfCheckedCopies}" Visibility="{Binding Label3Visibility}"/>
+        </StackPanel>
+        <!--#endregion-->
+
+        <!--#region Grid.Row=5-->
+        
+        <!--#endregion-->
+        <!--#endregion-->
+
+    </Grid>
+</Window>
